@@ -1,0 +1,122 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+
+
+int main(int argc,char *argv[]){
+  
+//  FILE *fp = fopen("testfile","w");
+  
+  FILE *outkmc;
+  
+  float delta_time = 1;
+  float total_time = 1;
+  
+  int selectevent = 1;
+  
+  int execsteps = 1;
+  
+  int x = 6;
+  
+  int l = 2;
+  
+  
+  char *char2;
+
+  int i,a,m,a1,o,u;
+
+  char char1[50000][50];
+
+  char res_type[50000][5],atom_type[50000][5];
+
+  int atom_num[50000];
+
+  float atom_x[50000],atom_y[50000],atom_z[50000];
+
+  float atom_x2[50000],atom_y2[50000],atom_z2[50000];
+
+  int res_number[50000];
+
+  char charsam[50000][20];
+
+  int res_test;
+
+  int count1;
+
+  float box_x,box_y,box_z;
+
+  float box_tester;
+
+  float energy_val;
+
+  char chari;
+
+  float atom_1x,atom_1y,atom_1z;
+
+  float atom_2x,atom_2y,atom_2z;
+
+  float atom_3x,atom_3y,atom_3z;
+
+  float diff_x1,diff_y1,diff_z1;
+
+  float n1,n2,n3;
+
+  float OMEGA_B_VAL, OMEGA_ZERO_VAL;
+
+  FILE *fp;
+
+  float PI = 3.141592654;
+
+  char charA[30], charB[30];
+
+
+      fp = fopen("minimized3.gro","r");
+
+      a = 0;
+
+      while(fgets(char1[a],sizeof(char1[a]),fp) != NULL){
+
+        a ++;
+
+        };      
+        
+       for(i=2;i<=a;i++){
+
+
+       if(i<=a-2)  
+                   {
+                         sscanf(char1[i],"%20[ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890]%f%f%f",&charA,&atom_x[i],&atom_y[i],&atom_z[i]);
+                   
+                    //    sscanf(char1[i],"%s%s",charA,charB);
+                    //
+                    //
+                    //    printf("%s%8.3f%8.3f%8.3f\n",charA,atom_x[i],atom_y[i],atom_z[i]);
+
+                    sscanf(charA,"%d%s%s%d",&res_number[i],&res_type[i],&atom_type[i],&atom_num[i]);
+
+                    if(i < 10000) {
+
+                    sscanf(charA,"%d%s%s%d",&res_number[i],&res_type[i],&atom_type[i],&atom_num[i]);
+		    
+                    };
+                    //    printf("%s%s\n",charA,charB);
+
+                   };
+       if(i==a-1)  {
+
+                  sscanf(char1[i],"%f%f%f%s[^\n]",&box_x,&box_y,&box_z,&chari);
+                                                           //                  printf("%f%f%f\n",box_x,box_y,box_z);
+                   };
+
+         //      if(i==a-1) printf("%s",char1[i]);  
+
+       };
+
+       sscanf(char1[a-1],"%f%f%f",&box_x,&box_y,&box_z);
+
+       fclose(fp);
+
+  
+  
+}

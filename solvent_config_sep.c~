@@ -1,0 +1,87 @@
+#include <kmc.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+ int solvent_config_separator(int *num_ions,int imp)
+ 
+ {
+   
+  int i,a,m,a1,k,o,u;  
+  
+  char char1[100000][100];
+      
+  char res_type[100000][5],atom_type[100000][5];
+  
+  int atom_num[100000];
+  
+  float atom_x[100000],atom_y[100000],atom_z[100000];
+
+  int res_number[100000];  
+  
+  int natoms;
+
+  if(imp == 0) {
+    
+    
+      fp = fopen("minimized3.gro","r");
+      
+      a = 0;
+      
+      while(fgets(char1[a],sizeof(char1[a]),fp) != NULL){
+	
+	a ++;
+	
+      };
+      
+      u = 0;
+            
+      for(i=2;i<=a;i++){
+    
+	
+        if(i<=a-2)  sscanf(char1[i],"%d%s%s%d%f%f%f",&res_number[i],&res_type[i],&atom_type[i],&atom_num[i],&atom_x[i],&atom_y[i],&atom_z[i]);
+        if(i==a-1)  {
+
+	            sscanf(char1[i],"%f%f%f%s[^\n]",&box_x,&box_y,&box_z,&chari);
+//	            printf("%f%f%f\n",box_x,box_y,box_z);
+      };
+	
+// 	if(i<=a-2) printf("%5d%5s%5s%5d%8.3f%8.3f%8.3f\n",res_number[i],&res_type[i],&atom_type[i],atom_num[i],atom_x[i],atom_y[i],atom_z[i]); 
+//      if(i==a-1) printf("%s",char1[i]);  
+	
+      };   
+      
+//       printf("%s",char1[a-3]);
+      
+    //  sscanf(char1[a-1],"%f%f%f",&box_x,&box_y,&box_z);
+      
+      fclose(fp); 
+      
+      natoms = 0;
+      
+      for(i=2;i<=a-2;i++){
+	
+          if(strcmp(res_type[i],"SOL")==1 && strcmp(res_type[i],"NA+")==1){
+	    
+	     natoms++;
+	    
+	  };	
+	
+      };
+      
+      for(i=2;i<=a-2;i++){
+	
+          if(strcmp(res_type[i],"NA+")==0){
+	    
+	     *num_ions++;
+	    
+	  };	
+	
+      };
+      
+      printf("%d\t%s\n",natoms,"natoms");
+    
+  };
+  
+}

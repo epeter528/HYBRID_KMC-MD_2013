@@ -1,0 +1,2598 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+	 
+int main(int argc, char *argv[])
+{
+         int mdtime,i,j,n,l,k,select_term;
+	 
+	 int range_1or2, buf[100],size;
+	 
+	 float Temp;
+	 
+	 float T1,T2,T3,T4,T5,Temp_orig;
+	 
+	 float sim_temp;
+	 
+	 float  en_aver;
+	 
+	 float  noe_min;
+	 
+	 int sizeof_stddev;
+	 
+	 float stddev_dih[10000],rot_change;
+	 
+	 char *grofile,*topfile;
+	 
+	 char *trajfile,*final_file,*ener_file,*mdpfile;
+	 
+	 int aminoresnum;
+	 
+	 int scansteps;
+	 
+	 float energy_scan2[1000][7][50];
+	 
+	 int num_list1;
+	 
+	 float expconst;
+	 
+	 float delta_phi;
+	 
+	 int imp;
+
+	 int icounter;
+	 
+	 int execsteps;
+	 
+	 int selectamino;
+	 
+	 int selectevent;
+	 
+	 int num_na,num_cl;
+
+	 int replexbool;
+
+	 int sum_of_mdtime,step;
+	 
+	 int kmcsteps;
+	 
+	 char chari[250];
+	 
+	 float sumrate;
+	 
+	 float OMEGA_B[7],OMEGA_ZERO[7];
+	 
+	 float delta_time,scansteps2;
+	 
+	 float friction_coeff,total_time = 0;
+	 
+	 FILE *TIME;
+	 
+	 FILE *out;
+	 
+	 Temp = 335.15;
+	 
+         int x[10000];
+      
+         float y[10000];
+	 
+	 char *xvgfile;
+	 
+	 FILE *fp = fopen("input","r");
+
+	 //	 fscanf(fp,"%s",&chari);
+	 //2
+	 fscanf(fp,"%d",&mdtime);
+         //3
+//	 fscanf(fp,"%s",&chari);
+         //4
+	 fscanf(fp,"%d",&kmcsteps);
+         //5
+//	 fscanf(fp,"%s",&chari);
+	 //5+1
+	 fscanf(fp,"%d",&scansteps);
+         //6
+	 fscanf(fp,"%d",&replexbool);
+         //7
+//	 fscanf(fp,"%s",&chari);	 
+         //8
+	 fscanf(fp,"%f",&T1);
+         //9
+//	 fscanf(fp,"%s",&chari);
+         //10
+	 fscanf(fp,"%f",&T2);	 
+         //11
+//	 fscanf(fp,"%s",&chari);
+         //12
+	 fscanf(fp,"%f",&T3);	 
+         //13
+//	 fscanf(fp,"%s",&chari);
+         //14
+	 fscanf(fp,"%f",&T4);
+         //15
+//	 fscanf(fp,"%s",&chari);
+         //16
+	 fscanf(fp,"%f",&T5);
+         //17
+//	 fscanf(fp,"%s",&chari);
+         //18
+	 fscanf(fp,"%f",&Temp_orig);
+         //19
+//	 fscanf(fp,"%s",&chari);
+         //20
+	 fscanf(fp,"%f",&noe_min);
+         //21
+//	 fscanf(fp,"%s",&chari);
+         //22
+	 fscanf(fp,"%d",&imp);
+	 
+	 fclose(fp);
+
+printf("%s\n","before open");	 
+	 TIME = fopen("TIME","w");
+	 out  = fopen("OUTPUT","w");
+	 
+	 
+//	 fscanf(fp,"%s",&chari);
+	 //2
+	 fprintf(out,"%d\n",mdtime);
+printf("%s\n","after open");
+return 0;
+        //3
+//	 fscanf(fp,"%s\n",&chari);
+         //4
+	 fprintf(out,"%d\n",kmcsteps);
+         //5
+//	 fprintf(out,"%s\n",&chari);
+	 //5+1
+	 fprintf(out,"%d\n",scansteps);
+         //6
+	 fprintf(out,"%d\n",replexbool);
+         //7
+//	 fprintf(out,"%s\n",&chari);	 
+         //8
+	 fprintf(out,"%f\n",T1);
+         //9
+//	 fprintf(out,"%s\n",&chari);
+         //10
+	 fprintf(out,"%f\n",T2);	 
+         //11
+//	 fprintf(out,"%s\n",&chari);
+         //12
+	 fprintf(out,"%f\n",T3);	 
+         //13
+//	 fprintf(out,"%s\n",&chari);
+         //14
+	 fprintf(out,"%f\n",T4);
+         //15
+//	 fprintf(out,"%s\n",&chari);
+         //16
+	 fprintf(out,"%f\n",T5);
+         //17
+//	 fprintf(out,"%s\n",&chari);
+         //18
+	 fprintf(out,"%f\n",Temp_orig);
+         //19
+//	 fprintf(out,"%s\n",&chari);
+         //20
+	 fprintf(out,"%f\n",noe_min);
+         //21
+//	 fprintf(out,"%s\n",&chari);
+         //22
+	 fprintf(out,"%d\n",imp);	 
+	 
+system("cp minimized_water.gro start.gro");
+//scansteps  = 20;
+scansteps2 = scansteps;
+
+
+for(l = 1; l <= kmcsteps; l++){
+
+    
+
+    if(replexbool == 1){    
+      
+      
+      i = replex(argc,argv,T1,T2,T3,T4,T5,&sim_temp,mdtime,Temp_orig,imp);
+
+      
+    };
+      
+    
+    if(replexbool == 0){
+      
+      
+      sim_temp = Temp_orig;
+      
+    };
+    
+    grofile = "start.gro";
+   
+    
+    i = mdprod(argc,argv,mdtime,sim_temp,imp,grofile);  
+
+    fprintf(out,"%s\n\n","End of MD");
+   
+    i = solvent_config_separator(&num_na,&num_cl,imp);         
+    
+    i = edit(argc,argv); 
+
+    i = noe_sep(argc,argv,noe_min);     
+
+    
+    i = dih_trans(argc,argv,stddev_dih,&sizeof_stddev);
+    
+    
+    for(k = 1; k <= icounter;k ++){
+      
+       for(j = 1; j <= 7; j++){
+	  
+	  for(n = 1;n <= scansteps; n++){
+	     
+	     energy_scan2[i][j][n] = 0;
+	       
+	  };
+       };     
+    };  
+    
+    xvgfile = "searchlist.ndx";  
+  
+    i = read_xvg_files(xvgfile,&icounter,x,y);    
+    
+    fprintf(out,"%s\n\n","Begin of Trans-scan");     
+      
+    for(k = 1; k <= icounter; k++)
+      
+    {     
+
+      
+      aminoresnum = x[k];
+      
+      rot_change  = stddev_dih[k]/scansteps2;
+      
+      delta_phi   = stddev_dih[k]/scansteps2;
+      
+	 
+       fprintf(out,"%s\n","dih-scan");    
+
+       i = dihedralbreak(argc,argv,scansteps,aminoresnum,rot_change,energy_scan2,k,sim_temp,OMEGA_B,OMEGA_ZERO);      
+      
+       
+         expconst = y[k];
+	 
+       fprintf(out,"%s\n","break-scan"); 	 
+	 
+       i = break_trans(argc,argv,scansteps,aminoresnum,energy_scan2,k,sim_temp,expconst,OMEGA_B,OMEGA_ZERO);  
+       
+       fprintf(out,"%s\n","form-scan");           
+       
+       i = form_trans(argc,argv,scansteps,aminoresnum,energy_scan2,k,sim_temp,OMEGA_B,OMEGA_ZERO);            
+        
+       fprintf(out,"%s\n","phi-scan");       
+       
+       i = phi_trans(argc,argv,scansteps,aminoresnum,energy_scan2,k,delta_phi,sim_temp,OMEGA_B,OMEGA_ZERO);
+      
+       fprintf(out,"%s\n","psi-scan");        
+
+       i = psi_trans(argc,argv,scansteps,aminoresnum,energy_scan2,k,delta_phi,sim_temp,OMEGA_B,OMEGA_ZERO);       
+        
+       fprintf(out,"%s\n","phi-scan-neg");       
+       
+       i = phi_trans_neg(argc,argv,scansteps,aminoresnum,energy_scan2,k,delta_phi,sim_temp,OMEGA_B,OMEGA_ZERO);            
+
+       fprintf(out,"%s\n","psi-scan-neg");          
+       
+       i = psi_trans_neg(argc,argv,scansteps,aminoresnum,energy_scan2,k,delta_phi,sim_temp,OMEGA_B,OMEGA_ZERO);       
+
+      
+    }; // End of Transition-state sampling
+
+   fprintf(out,"%s\n","End of trans-state sampling");
+    
+   i = delta_g_search(icounter,scansteps,energy_scan2,&execsteps,&selectamino,
+		   &selectevent,sim_temp,OMEGA_B,OMEGA_ZERO,&delta_time);
+   
+     total_time = total_time + delta_time;
+   
+
+     
+     fprintf(TIME,"%d\t%f\n",l,total_time);
+     
+     fprintf(out,"%s\n","############");     
+     fprintf(out,"%s\n","DELTA-TIME");
+     fprintf(out,"%f\n",delta_time);
+     fprintf(out,"%s\n","TOTAL-TIME");
+     fprintf(out,"%f\n",total_time);
+     fprintf(out,"%s\n","select-event");
+     fprintf(out,"%d\n",selectevent);
+     fprintf(out,"%s\n","execsteps");
+     fprintf(out,"%d\n",execsteps);
+     fprintf(out,"%s\n","selectamino");
+     fprintf(out,"%d\n",x[selectamino]);
+     fprintf(out,"%s\t%d\n","step",l);
+     fprintf(out,"%s\n","############");
+
+    
+     
+     rot_change = stddev_dih[selectamino]/scansteps2;
+
+     delta_phi  = stddev_dih[selectamino]/scansteps2;
+
+     
+     if(selectevent == 1){
+      
+       i = dihedralbreak(argc,argv,execsteps,x[selectamino],rot_change,energy_scan2,1,sim_temp,OMEGA_B,OMEGA_ZERO);       
+       
+    };
+	   
+    if(selectevent == 2){
+      
+      i = break_trans(argc,argv,execsteps,x[selectamino],energy_scan2,1,sim_temp,expconst,OMEGA_B,OMEGA_ZERO);
+      
+    };
+    
+    if(selectevent == 3){
+      
+      i = form_trans(argc,argv,execsteps,x[selectamino],energy_scan2,1,sim_temp,OMEGA_B,OMEGA_ZERO);
+      
+    };
+    
+    if(selectevent == 4){
+      
+      i = phi_trans(argc,argv,execsteps,x[selectamino],energy_scan2,1,delta_phi,sim_temp,OMEGA_B,OMEGA_ZERO); 
+      
+    };
+    
+    if(selectevent == 5){
+      
+      i = psi_trans(argc,argv,execsteps,x[selectamino],energy_scan2,1,delta_phi,sim_temp,OMEGA_B,OMEGA_ZERO);
+
+      
+    };
+    
+    if(selectevent == 6){
+      
+      i = phi_trans_neg(argc,argv,execsteps,x[selectamino],energy_scan2,1,delta_phi,sim_temp,OMEGA_B,OMEGA_ZERO);
+      
+    };
+    
+    if(selectevent == 7){
+      
+      i = psi_trans_neg(argc,argv,execsteps,x[selectamino],energy_scan2,1,delta_phi,sim_temp,OMEGA_B,OMEGA_ZERO);
+      
+    };
+
+
+         i = traj(argc,argv,mdtime,l,imp);
+      
+	 i = solvent(argc,argv,num_na,num_cl,imp);
+        
+    
+    
+}; // End of KMC-MAINLOOP
+	 	 
+fclose(TIME);
+fclose(out);
+
+	 
+}
+
+ int edit(int argc,char *argv[])
+ {
+ 
+   int i,a;
+   
+   argc = 8 ;
+   
+   argv[0] = "editconf";
+   
+   argv[1] = "-f";
+   
+   argv[2] = "minimized3.gro";
+   
+   argv[3] = "-c";
+   
+   argv[4] = "-o";
+   
+   argv[5] = "minimized3.gro";
+   
+   argv[6] = "-resnr";
+   
+   argv[7] = "1";
+   
+   i = gmx_editconf2(argc,argv,a); 
+
+   
+}
+
+ int traj(int argc,char *argv[],int mdtime,int step,int imp)
+ 
+ {
+   
+   int i,a;
+   
+   int atom_tot;
+   
+   char char1[500];
+   
+   char res_type[5],atom_type[5];
+  
+   int atom_num;
+  
+   float atom_x,atom_y,atom_z;
+
+   int res_number; 
+   
+   FILE *fp,*fp2;
+  
+  if(imp == 0) {
+    
+    
+      fp = fopen("minimized3.gro","r");
+      fp2 = fopen("prot.ndx","w");
+      
+      fprintf(fp2,"%s\n","[ protein ]");
+      
+      a = 0;
+      
+      
+      while(fgets(char1,sizeof(char1),fp) != NULL){
+	
+	            a ++;
+	
+       //	            printf("%s\n",char1);
+		    
+		if(a ==2) {
+		  
+		sscanf(char1,"%d",&atom_tot);
+		
+                };
+	
+		if(a > 2 && a <= atom_tot+2) {    
+	            sscanf(char1,"%d%s%s%d%f%f%f",&res_number,res_type,atom_type,&atom_num,&atom_x,&atom_y,&atom_z);
+
+	//	    printf("%s\n",atom_type);
+	
+                    if(strcmp(res_type,"SOL")!=0){
+	    
+	                 fprintf(fp2,"%d\n",atom_num);
+	    
+	            };
+
+		  
+		};	
+	
+      };
+      
+      fclose(fp); 
+      fclose(fp2);
+      
+   //   printf("%d\n",count_na);
+   //   printf("%d\n",count_cl);
+      
+   //   printf("%d\t%s\n",natoms,"natoms");
+    
+  argc = 7;
+  argv[0] ="trjconv";
+  argv[1] ="-f";
+  argv[2] ="md_traj.trr";
+  argv[3] ="-o";
+  argv[4] ="md_traj.trr";
+  argv[5] ="-n";
+  argv[6] ="prot.ndx";
+   
+  i = gmx_trjconv(argc,argv); 
+
+  };
+  
+  
+   argc = 7;
+   
+   argv[0] = "trjcat";
+   argv[1] = "-f";
+   argv[2] = "md_trajx_internal.trr";
+   argv[3] = "md_traj.trr";
+   argv[4] = "-settime";
+   argv[5] = "-o";
+   argv[6] = "md_trajx_internal.trr";
+   
+   i = gmx_trjcat2(argc,argv,step,mdtime);
+   
+   system("rm -f ./#*#");
+   
+}
+
+ int solvent(int argc,char *argv[],int num_na,int num_cl,int imp)
+ 
+ {
+   FILE *fp;
+   FILE *fp2;
+   
+   int a,i;
+   
+   char char1[500];
+   
+   float box_x,box_y,box_z;
+   
+   float max_x,max_y,max_z;
+   
+   float min_x,min_y,min_z;
+   
+   box_x = box_y = box_z = 10;
+ 
+   char *grofile;
+     
+   char *topfile;
+	
+   char  *mdpfile; 
+	
+   char  *ndxfile;
+   
+   char res_type[5],atom_type[2];
+  
+   int atom_num;
+  
+   float atom_x,atom_y,atom_z;
+
+   int res_number;  
+  
+   int natoms,atom_tot;
+   
+   char str[100];
+   
+   
+   fp = fopen("minimized.gro","r");
+      
+      a = 0;
+      
+      natoms = 0;
+      
+      max_x = max_y = max_z = 0;
+      
+      while(fgets(char1,sizeof(char1),fp) != NULL){
+	
+	            a ++;
+	
+       //	            printf("%s\n",char1);
+		    
+		if(a ==2) {
+		  
+		sscanf(char1,"%d",&natoms);
+		
+                };  
+		
+		if(a >=2 && a <= natoms+2){
+		  
+		  sscanf(char1,"%d%s%s%d%f%f%f",&res_number,res_type,atom_type,&atom_num,&atom_x,&atom_y,&atom_z);
+		  
+		  if(atom_x > max_x) max_x = atom_x;
+		  if(atom_y > max_y) max_y = atom_y;
+		  if(atom_z > max_z) max_z = atom_z;		  
+	//	  printf("%d\t%d\t%d\t%f\t%f\t%f\n",natoms,a,res_number,atom_x,atom_y,atom_z);
+		  
+		};
+   
+      };
+      
+   fclose(fp);   
+
+   fp = fopen("minimized.gro","r");
+      
+      a = 0;
+      
+      natoms = 0;
+      
+      min_x = max_x;
+      min_y = max_y;     
+      min_z = max_z;     
+      
+      while(fgets(char1,sizeof(char1),fp) != NULL){
+	
+	            a ++;
+	
+       //	            printf("%s\n",char1);
+		    
+		if(a ==2) {
+		  
+		sscanf(char1,"%d",&natoms);
+		
+                };  
+		
+		if(a >=2 && a <= natoms+2){
+		  
+		  sscanf(char1,"%d%s%s%d%f%f%f",&res_number,res_type,atom_type,&atom_num,&atom_x,&atom_y,&atom_z);
+		  
+		  if(atom_x < min_x) min_x = atom_x;
+		  if(atom_y < min_y) min_y = atom_y;
+		  if(atom_z < min_z) min_z = atom_z;		  
+	//	  printf("%d\t%d\t%d\t%f\t%f\t%f\n",natoms,a,res_number,atom_x,atom_y,atom_z);
+		  
+		};
+   
+      };
+      
+   fclose(fp); 
+   
+   sprintf(str,"%f\t%f\t%f\t",(max_x - min_x)+1,(max_y - min_y)+1,(max_z - min_z)+1);
+   
+   argc = 8 ;
+   
+   argv[0] = "editconf";
+   
+   argv[1] = "-f";
+   
+   argv[2] = "minimized.gro";
+   
+   argv[3] = "-c";
+   
+   argv[4] = "-o";
+   
+   argv[5] = "minimized.gro";
+   
+   argv[6] = "-box";
+   
+   argv[7] = str;  
+   
+   i = gmx_editconf2(argc,argv,a);  
+   
+   fp  = fopen("LOV2.top","r");
+   
+   fp2 = fopen("LOV2gen.top","w");
+   
+   a = 0;
+   
+   while(fgets(char1,sizeof(char1),fp) != 0 ){
+
+      fprintf(fp2,"%s",char1);
+  }
+   
+   fclose(fp);
+   fclose(fp2);
+   
+   if(imp == 0){
+     
+     argc = 9;
+     argv[0] = "genbox";
+     
+     argv[1] = "-cp";
+     
+     argv[2] = "minimized.gro";
+     
+     argv[3] = "-cs";
+     
+     argv[4] = "spc216.gro";
+     
+     argv[5] = "-p";
+     
+     argv[6] = "LOV2gen.top";
+     
+     argv[7] = "-o";
+     
+     argv[8] = "start.gro";
+
+     gmx_genbox2(argc,argv);
+     
+/*     fp = fopen("start.gro","r");
+     fp2 = fopen("sol.ndx","w");
+     fprintf(fp2,"%s\n","[ SOL ]");
+      
+      a = 0;
+      
+      while(fgets(char1,sizeof(char1),fp) != NULL){
+	
+	            a ++;
+	
+       //	            printf("%s\n",char1);
+		    
+		if(a ==2) {
+		  
+		sscanf(char1,"%d",&atom_tot);
+		
+                };
+	
+		if(a > 2 && a <= atom_tot+2) {    
+	            sscanf(char1,"%5d%5s%5s%5d%7.3f%7.3f%7.3f",&res_number,res_type,atom_type,&atom_num,&atom_x,&atom_y,&atom_z);
+	
+                    if(strcmp(res_type,"SOL")==0){
+	    
+		       natoms++;
+		      
+	               fprintf(fp2,"%d\n",natoms);
+	    
+	            };
+		   
+		};	
+	
+      };
+      
+      fclose(fp);    
+      fclose(fp2);
+      
+     argc = 11;
+     argv[0] = "grompp";     
+     argv[1] = "-c";
+     argv[2] = "start.gro";
+     argv[3] = "-p";
+     argv[4] = "LOV2gen";
+     argv[5] = "-n";
+     argv[6] = "2.ndx";
+     argv[7] = "-o";
+     argv[8] = "run.tpr";
+     argv[9] = "-f";
+     argv[10] = "minim.mdp"; */
+	 
+//     gromppo2(argc,argv,grofile,topfile,mdpfile,ndxfile);     
+     
+//     argc = 8;
+//     argv[0] = "genion";     
+//     argv[1] = "-s";
+//     argv[2] = "run.tpr";
+//     argv[3] = "-nn";
+//     argv[4] = "1";
+//     argv[5] = "-nname";
+//     argv[6] = "CL";
+//     argv[3] = "-o";
+//     argv[4] = "start.gro";
+//     argv[5] = "-p";
+//     argv[6] = "LOV2gen.top";
+//     argv[7] = "-neutral";
+//     argv[11] = "-n";
+//     argv[12] = "sol.ndx";
+       
+//     gmx_genion(argc,argv);
+     
+  };
+  
+    fp  = fopen("LOV2gen.top","r");
+   
+   fp2 = fopen("start.top","w");
+   
+   a = 0;
+   
+   while(fgets(char1,sizeof(char1),fp) != 0 ){
+
+      fprintf(fp2,"%s",char1);
+  }
+   
+   fclose(fp);
+   fclose(fp2);  
+   
+   system("rm -f ./#*#");
+   
+}
+
+ int solvent_config_separator(int *num_na,int *num_cl,int imp)
+ 
+ {
+      
+  int i,a,m,a1,k,o,u;  
+  
+  char char1[100];
+      
+  char res_type[5],atom_type[2];
+  
+  int atom_num;
+  
+  float atom_x,atom_y,atom_z;
+
+  int res_number;  
+  
+  int natoms,atom_tot;
+  
+  FILE *fp;
+  FILE *fp2;
+  
+  float box_x,box_y,box_z;
+  
+  char *chari;
+  
+  int count_na,count_cl;
+
+
+  if(imp == 0) {
+    
+    
+      fp = fopen("minimized3.gro","r");
+      
+      a = 0;
+      
+      natoms = 0;
+      
+      count_na = 0;
+      
+      count_cl = 0; 
+      
+      while(fgets(char1,sizeof(char1),fp) != NULL){
+	
+	            a ++;
+	
+       //	            printf("%s\n",char1);
+		    
+		if(a ==2) {
+		  
+		sscanf(char1,"%d",&atom_tot);
+		
+                };
+	
+		if(a > 2 && a <= atom_tot+2) {    
+	            sscanf(char1,"%5d%5s%2s%5d%7.3f%7.3f%7.3f",&res_number,res_type,atom_type,&atom_num,&atom_x,&atom_y,&atom_z);
+
+	//	    printf("%s\n",atom_type);
+	
+                    if(strcmp(res_type,"SOL")!=0){
+	    
+	            natoms++;
+	    
+	            };
+
+	
+                   if(strcmp(atom_type,"NA")==0){
+	    
+	            count_na++;
+	     
+	            };	            
+
+                   if(strcmp(atom_type,"CL")==0){
+	    
+	            count_cl++;
+	    
+	           };	
+		   
+		};	
+		
+		if(a == atom_tot+3) sscanf(char1,"%f%f%f",&box_x,&box_y,&box_z);
+	
+      };
+      
+      fclose(fp); 
+      
+   //   printf("%d\n",count_na);
+   //   printf("%d\n",count_cl);
+      
+   //   printf("%d\t%s\n",natoms,"natoms");
+    
+  };
+  
+      *num_na = count_na;
+      *num_cl = count_cl;
+
+      
+      a = 0;
+    
+      fp = fopen("minimized3.gro","r");      
+      fp2 = fopen("copy.gro","w");
+      
+      fprintf(fp2,"%s\n","dried");
+      fprintf(fp2,"%d\n",natoms);      
+      
+      while(fgets(char1,sizeof(char1),fp) != NULL){
+	
+	            a ++;
+
+	
+		if(a > 2 && a <= natoms+2) {  
+		  
+	            sscanf(char1,"%d%s%s%d%f%f%f",&res_number,res_type,atom_type,&atom_num,&atom_x,&atom_y,&atom_z);
+                    fprintf(fp2,"%5d%5s%5s%5d%7.3f%7.3f%7.3f\n",res_number,res_type,atom_type,atom_num,atom_x,atom_y,atom_z);
+	//	    printf("%s\n",atom_type);
+	
+		};
+		
+		if(a == natoms+3) fprintf(fp2,"%f\t%f\t%f\n",box_x,box_y,box_z);		
+	
+      };
+      
+      fclose(fp);       
+      fclose(fp2);
+      
+      a = 0;
+      
+      fp2 = fopen("minimized3.gro","w");      
+      fp =  fopen("copy.gro","r");
+      
+      fprintf(fp2,"%s\n","dried");
+      fprintf(fp2,"%d\n",natoms);      
+      
+      while(fgets(char1,sizeof(char1),fp) != NULL){
+	
+	            a ++;
+
+	
+		if(a > 2 && a <= natoms+2) {  
+		  
+	            sscanf(char1,"%d%s%s%d%f%f%f",&res_number,res_type,atom_type,&atom_num,&atom_x,&atom_y,&atom_z);
+                    fprintf(fp2,"%5d%5s%5s%5d%7.3f%7.3f%7.3f\n",res_number,res_type,atom_type,atom_num,atom_x,atom_y,atom_z);
+	//	    printf("%s\n",atom_type);
+	
+		};
+		
+		if(a == natoms+3) fprintf(fp2,"%f\t%f\t%f\n",box_x,box_y,box_z);		
+	
+      };
+      
+      fclose(fp);       
+      fclose(fp2);
+      
+
+  
+}
+
+int dihedralbreak(int argc,char *argv[],int scansteps,int aminoresnum,float rot_change,float energy_scan2[1000][7][50],int num_list1,float sim_temp,float OMEGA_B[7],float OMEGA_ZERO[7])
+{
+
+  int i,a,m,a1,k,o,u;  
+  
+  float OMEGA_B_VAL, OMEGA_ZERO_VAL;
+  
+  FILE *fp;
+    
+  int num_event = 1;
+  
+  float energy_val;
+  
+  
+ 
+  
+  for(k=1;k<=scansteps;k++){
+
+       
+    i = dih_processor(k,aminoresnum,rot_change,scansteps);    
+         
+
+    
+    printf("%s\n","barrier reached");
+    
+    i = energy_shift(argc,argv,&energy_val,sim_temp);
+
+    
+    energy_scan2[num_list1][num_event][k] = energy_val;
+    
+    printf("%f%s\n",energy_scan2[num_list1][num_event][k],"energy");
+
+    
+  };
+
+	
+    i = kramer_search(argc,argv,&OMEGA_B_VAL,&OMEGA_ZERO_VAL,sim_temp,aminoresnum);
+
+    
+    OMEGA_B[num_event] = OMEGA_B_VAL;
+    
+    OMEGA_ZERO[num_event] = OMEGA_ZERO_VAL;
+    
+    
+}
+
+int dih_processor(int k,int aminoresnum,float rot_change,int scansteps){
+  
+  int i,a,m,a1,o,u;  
+  
+  char char1[10000][100];
+      
+  char res_type[10000][5],atom_type[10000][5];
+  
+  int atom_num[10000];
+  
+  float atom_x[10000],atom_y[10000],atom_z[10000];
+  
+  float atom_x2[10000],atom_y2[10000],atom_z2[10000];  
+
+  int res_number[10000];
+  
+  int res_test;
+  
+  int count1,num_event;
+  
+  float box_x,box_y,box_z;
+  
+  float box_tester;
+  
+  float energy_val;
+  
+  char chari;
+  
+  float atom_1x,atom_1y,atom_1z;
+  
+  float atom_2x,atom_2y,atom_2z;
+  
+  float atom_3x,atom_3y,atom_3z;
+  
+  float diff_x1,diff_y1,diff_z1;
+  
+  float n1,n2,n3;
+  
+  float OMEGA_B_VAL, OMEGA_ZERO_VAL;
+  
+  FILE *fp;
+  
+  double PI = 3.141592654;
+  
+  num_event = 1;
+ 
+  
+    if(k==1){
+    
+      fp = fopen("minimized3.gro","r");
+      
+      a = 0;
+      
+      while(fgets(char1[a],sizeof(char1[a]),fp) != NULL){
+	
+	a ++;
+	
+//	printf("%d\n",a);
+	
+      };
+      
+      u = 0;
+            
+      for(i=2;i<=a;i++){
+    
+	
+        if(i<=a-2)  sscanf(char1[i],"%d%s%s%d%f%f%f",&res_number[i],&res_type[i],&atom_type[i],&atom_num[i],&atom_x[i],&atom_y[i],&atom_z[i]);
+        if(i==a-1)  {
+
+	            sscanf(char1[i],"%f%f%f%s[^\n]",&box_x,&box_y,&box_z,&chari);
+	            printf("%f%f%f\n",box_x,box_y,box_z);
+      };
+	
+// 	if(i<=a-2) printf("%5d%5s%5s%5d%8.3f%8.3f%8.3f\n",res_number[i],&res_type[i],&atom_type[i],atom_num[i],atom_x[i],atom_y[i],atom_z[i]); 
+//      if(i==a-1) printf("%s",char1[i]);  
+	
+      };   
+      
+       printf("%s",char1[a-3]);
+      
+    //  sscanf(char1[a-1],"%f%f%f",&box_x,&box_y,&box_z);
+      
+      fclose(fp);
+      
+    //  box_tester = box_x[0];
+      
+   //   printf("%f%f%f\n",box_x[1],box_y[1],box_z[1]);
+   //    printf("%d%d%d\n",aminoresnum,scansteps,a);
+
+	fp = fopen("1.ndx","w");
+	
+	fprintf(fp,"%s\n","[ 1 ]");
+
+        for(m=2;m<=a-2;m++){
+	    
+	   
+	//    printf("%s\n",&atom_type[m]);
+	  if(aminoresnum == res_number[m]) {
+	    
+	        if(strcmp(atom_type[m],"CA")==0)
+	    
+	           fprintf(fp,"%d\n",atom_num[m]);
+	
+		if(strcmp(atom_type[m],"N")==0)
+		  
+		   fprintf(fp,"%d\n",atom_num[m]);
+		
+		if(strcmp(atom_type[m],"C")==0)
+		  
+		   fprintf(fp,"%d\n",atom_num[m]);
+		
+		if(strcmp(atom_type[m],"O")==0)
+		  
+		   fprintf(fp,"%d\n",atom_num[m]);
+	           
+	//    if(x[i] = res_number[m] && sscanf(atom_type[m],"%3s%2s",&s1,&s2)==1) printf("%s",&atom_type[m]) ;
+
+	      
+	    };
+	    
+	 };
+	  
+	fclose(fp);	    
+
+	fp = fopen("2.ndx","w");
+	
+	fprintf(fp,"%s\n","[ group ]");
+	
+	for(m=2;m<=a-2;m++){
+	  
+	  if(res_number[m] == aminoresnum) {
+	    
+	    fprintf(fp,"%d\n",atom_num[m]);
+	    
+	    count1++;
+	    
+	  };
+	  
+	};
+	
+	fprintf(fp,"%s\n","[ protein ]");
+	
+	for(m=2;m<=a-2;m++){
+	  
+	    fprintf(fp,"%d\n",atom_num[m]);
+	};
+	
+	fprintf(fp,"%s\n","[ system ]");
+	
+	for(m=2;m<=a-2;m++){
+	  
+	    fprintf(fp,"%d\n",atom_num[m]);
+	};	
+	
+	fclose(fp);
+	
+    };
+    
+    if(k >= 2){
+     
+      fp = fopen("minimized.gro","r");
+      
+      a = 0;
+      
+      while(fgets(char1[a],sizeof(char1[a]),fp) != NULL){
+	
+	a ++;
+	
+      };
+      
+      u = 0;
+            
+      for(i=2;i<=a;i++){
+    
+	
+        if(i<=a-2)  sscanf(char1[i],"%d%s%s%d%f%f%f",&res_number[i],&res_type[i],&atom_type[i],&atom_num[i],&atom_x[i],&atom_y[i],&atom_z[i]);
+        if(i==a-1)  {
+
+	            sscanf(char1[i],"%f%f%f%s[^\n]",&box_x,&box_y,&box_z,&chari);
+	            printf("%f%f%f\n",box_x,box_y,box_z);
+      };
+	
+// 	if(i<=a-2) printf("%5d%5s%5s%5d%8.3f%8.3f%8.3f\n",res_number[i],&res_type[i],&atom_type[i],atom_num[i],atom_x[i],atom_y[i],atom_z[i]); 
+//      if(i==a-1) printf("%s",char1[i]);  
+	
+      };   
+      
+       printf("%s",char1[a-3]);
+      
+    //  sscanf(char1[a-1],"%f%f%f",&box_x,&box_y,&box_z);
+      
+      fclose(fp);
+      
+      
+    };
+    
+    count1 = 1;
+    
+    for(i=2;i<=a;i++){
+      
+      if(res_number[i] == aminoresnum && count1 == 1 ) {
+	
+	 atom_1x = atom_x[i+1];
+	 atom_1y = atom_y[i+1];
+	 atom_1z = atom_z[i+1];
+	 
+	 atom_2x = atom_x[i+2];
+	 atom_2y = atom_y[i+2];
+	 atom_2z = atom_z[i+2];
+	 
+	 atom_3x = atom_x[i+3];
+	 atom_3y = atom_y[i+3];
+	 atom_3z = atom_z[i+3];	 
+	 
+	 count1 ++;
+	 
+      };
+      
+    };
+    
+    diff_x1 = atom_2x - atom_3x;
+    diff_y1 = atom_2y - atom_3y;
+    diff_z1 = atom_2z - atom_3z;
+    
+    n1 = diff_x1 / sqrt(pow(diff_x1,2)+pow(diff_y1,2)+pow(diff_z1,2));
+    n2 = diff_y1 / sqrt(pow(diff_x1,2)+pow(diff_y1,2)+pow(diff_z1,2));
+    n3 = diff_z1 / sqrt(pow(diff_x1,2)+pow(diff_y1,2)+pow(diff_z1,2));
+    
+    printf("%f%f%f\n",n1,n2,n3);
+    
+    for(i=2;i<=a;i++){
+      
+      if(res_number[i] == aminoresnum) {
+	
+          atom_x[i] = atom_x[i] - atom_3x;
+          atom_y[i] = atom_y[i] - atom_3y;
+          atom_z[i] = atom_z[i] - atom_3z;	  
+	
+      };
+      
+    };
+
+    for(i=2;i<=a;i++){
+      
+      if(res_number[i] == aminoresnum) {      
+      
+	 atom_x2[i] = atom_x[i]*(cos(rot_change*PI/180) + pow(n1,2)*(1 - cos(rot_change*PI/180))) + atom_y[i]*((n2*n1)*(1 - cos(rot_change*PI/180))
+	   	- n3 * sin(rot_change*PI/180)) + atom_z[i]*((n3*n1)*(1 - cos(rot_change*PI/180))+ n2*sin(rot_change*PI/180));
+
+	 atom_y2[i] = atom_x[i]*(n1*n2*(1 - cos(rot_change*PI/180))+n3*(sin(rot_change*PI/180))) + atom_y[i]*( cos(rot_change*PI/180) + pow(n2,2)*	
+	        (1 - cos(rot_change*PI/180))) + atom_z[i]*(n3*n1*(1 - cos(rot_change*PI/180))-n1*sin(rot_change*PI/180));
+		
+	 atom_z2[i] = atom_x[i]*(n1*n3*(1 - cos(rot_change*PI/180))-n2*sin(rot_change*PI/180)) + atom_y[i]*( n2*n3*	(1 - cos(rot_change*PI/180)) +
+	        n1*sin(rot_change*PI/180)) + atom_z[i]*( cos(rot_change*PI/180) + pow(n3,2) *(1 - cos(rot_change*PI/180)));
+      };
+      
+    };  
+
+    for(i=2;i<=a;i++){
+      
+      if(res_number[i] == aminoresnum) {
+	
+          atom_x2[i] = atom_x2[i] + atom_3x;
+          atom_y2[i] = atom_y2[i] + atom_3y;
+          atom_z2[i] = atom_z2[i] + atom_3z;	  
+	
+      };
+      
+    };    
+
+    fp = fopen("minimized.gro","w");
+    
+    fprintf(fp,"%s\n","intermediate-struct");
+    fprintf(fp,"%d\n", a-3);
+    
+    for(i=2;i<=a-2;i++){
+      
+      if(res_number[i] == aminoresnum) {
+	
+	 atom_x[i] = atom_x2[i];
+	 atom_y[i] = atom_y2[i];
+	 atom_z[i] = atom_z2[i];
+	 
+      };
+      
+      fprintf(fp,"%5d%5s%5s%5d%8.3f%8.3f%8.3f\n",res_number[i],res_type[i],atom_type[i],atom_num[i],atom_x[i],atom_y[i],atom_z[i]);
+      
+    };
+    
+    fprintf(fp,"%s",char1[a-1]);
+
+    fclose(fp);
+    
+    printf("%s\n","before energy shift");  
+  
+    if(k == scansteps){
+    
+    fp = fopen("1.ndx","w");
+	
+    fprintf(fp,"%s\n","[ group ]");
+	
+	for(m=2;m<=a-2;m++){
+	  
+//	  if(res_number[m] == aminoresnum) {
+	    
+	    fprintf(fp,"%d\n",atom_num[m]);
+	    
+	    count1++;
+	    
+//	  };
+	  
+	};
+	
+	fclose(fp);  
+	
+    };
+    
+    return 1;
+  
+}
+
+int kramer_search(int argc,char *argv[],float *OMEGA_B_VAL,float *OMEGA_ZERO_VAL,float sim_temp,int aminoresnum)
+{
+    int i,k,j;
+
+    char *grofile,*topfile,*ndxfile;
+	 
+    char *trajfile,*final_file,*ener_file,*mdpfile;
+	
+    int mdtime = 100000,num_rls;
+    
+    int select_term;
+    
+    float freq_event;
+    
+    float md_time,stddev_en;
+    
+    md_time = (float)mdtime*1E-15;
+    
+    float rls[10000];
+
+    
+        FILE *fp = fopen("kramer.mdp","w");
+	
+	fprintf(fp,"%s\n","title                    = implicit prod.");
+	fprintf(fp,"%s\n","cpp			 = /lib/cpp");
+	fprintf(fp,"%s\n","include 		 = -I../top");
+        fprintf(fp,"%s\n","integrator		 = md");
+	fprintf(fp,"%s\n","dt			 = 0.001");
+	fprintf(fp,"%s %d\n","nsteps  		 = ",mdtime);
+	fprintf(fp,"%s\n","comm_mode         =  angular ");
+	fprintf(fp,"%s\n","nstxout 		 = 1500");
+	fprintf(fp,"%s\n","nstvout 		 = 1500");
+	fprintf(fp,"%s\n","nstlog  		 = 1500 ");
+	fprintf(fp,"%s\n","nstenergy		 = 10 ");
+	fprintf(fp,"%s\n","nstxtcout		 = 1");	
+	fprintf(fp,"%s\n","xtc_grps		 = protein");
+	fprintf(fp,"%s\n","energygrps		 = protein ");	
+	fprintf(fp,"%s\n","nstlist 		 = 10");	
+	fprintf(fp,"%s\n","ns_type 		 = grid");		
+	fprintf(fp,"%s\n","rlist		 = 1.4 ");	
+	fprintf(fp,"%s\n","coulombtype		 = cut-off ");		
+	fprintf(fp,"%s\n","rcoulomb		 = 1.4");
+	fprintf(fp,"%s\n","vdwtype           = cut-off ");	
+	fprintf(fp,"%s\n","rvdw			 = 1.6");	
+	fprintf(fp,"%s\n","pbc                      = no");	
+	fprintf(fp,"%s\n","tcoupl  		 = v-rescale");	
+	fprintf(fp,"%s\n","tc-grps 		 = system");	
+	fprintf(fp,"%s\n","tau_t	        =  1.0 ");	
+	fprintf(fp,"%s %f \n","ref_t		 = ",sim_temp);	
+	fprintf(fp,"%s\n","Pcoupl  		 = no");	
+	fprintf(fp,"%s\n","gen_vel 		 = yes");	
+	fprintf(fp,"%s %f \n","gen_temp		 = ",sim_temp);	
+        fprintf(fp,"%s\n","constraints         = none");
+	fprintf(fp,"%s\n","implicit_solvent         = GBSA");
+	fprintf(fp,"%s\n","gb_algorithm             = HCT");	
+	fprintf(fp,"%s\n","rgbradii                 = 1.4");	
+	fclose(fp);
+
+
+	  
+	for(i=1;i<=2;i++){
+	  
+	  
+         argc = 13;
+         argv[0] = "grompp";
+         argv[1] = "-f";
+         argv[2] = "kramer.mdp";
+         argv[3] = "-p";
+         argv[4] = "LOV2.top";
+         argv[5] = "-o";
+         argv[6] = "run.tpr";
+         argv[7] = "-c";
+         if(i == 1) argv[8] = "minimized3.gro";
+         if(i == 2) argv[8] = "minimized.gro";	 
+         argv[9] = "-n";
+         argv[10] = "2.ndx";
+	 argv[11] = "-maxwarn";
+	 argv[12] = "3";	 
+     
+//        grompp_float(argc,argv);
+        if(i == 1)  system("~/gromacs-4.5.5/src/kernel/grompp -f kramer.mdp -p LOV2.top -c minimized3.gro -n 2.ndx -maxwarn 3 -o run.tpr");	
+        if(i == 2)  system("~/gromacs-4.5.5/src/kernel/grompp -f kramer.mdp -p LOV2.top -c minimized.gro -n 2.ndx -maxwarn 3 -o run.tpr");
+	
+	argc = 11;
+	argv[0] = "mdrun";
+	argv[1] = "-s";
+	argv[2] = "run.tpr";
+	argv[3] = "-c";
+	argv[4] = "kramer.gro";
+	argv[5] = "-o";
+	argv[6] = "trj.trr";
+	argv[7] = "-e";
+	argv[8] = "md_ener.edr";
+	argv[9] = "-dd";
+	argv[10] = "0";
+
+	
+	
+	system("mpirun -np 8 ~/gromacs-4.5.5/src/kernel/mdrun -s run.tpr -c kramer.gro -o trj.trr -e md_ener.edr -dd 0");
+
+	
+//	gmx_rms2(argc,argv,&num_rls,rls);
+
+        select_term = 13;
+	
+	  
+	argc = 5;
+	argv[0] = "g_energy";
+	argv[1] = "-f";
+	argv[2] = "md_ener.edr";
+	argv[3] = "-o";
+	argv[4] = "t.xvg";
+	
+        gmx_energy2(argc,argv,select_term,&stddev_en);
+	
+	
+	printf("%g\t%s\n",stddev_en,"STDDEVEBN");
+	
+	
+	if(i==1){
+	  
+	  *OMEGA_ZERO_VAL = stddev_en/md_time;
+	  
+	};
+	if(i==2){
+	  
+	  *OMEGA_B_VAL = stddev_en/md_time;
+	  
+	};
+	
+	};
+  
+	printf("%f\t%f\n",*OMEGA_ZERO_VAL,*OMEGA_B_VAL);
+ 	
+	
+}
+
+int energy_shift(int argc,char *argv[],float *energy_val,float sim_temp)
+
+{
+  int i,k;
+  
+  FILE *fp;
+  
+  double ran;
+  
+  float lambda;
+  
+  char *grofile, *topfile, *mdpfile, *ndxfile;  
+
+  char *trajfile;
+  
+  char *final_file;
+
+  char *ener_file;
+
+  char *dhdlfile;
+  
+  float free_energy_out;
+  
+  i = random_number(&ran);
+  
+  ran = ran * 100000;
+  
+  lambda = 0;
+
+   
+  for(k = 1;k <= 3; k++) {  
+    
+
+    fp = fopen("minim_fee.mdp","w");
+
+    fprintf(fp,"%s\n","include                  = -I../top");
+    fprintf(fp,"%s\n","integrator               = md");
+    fprintf(fp,"%s\n","tinit                    = 0");
+    fprintf(fp,"%s\n","dt                       = 0.001");
+    fprintf(fp,"%s\n","nsteps                   = 1000");
+    fprintf(fp,"%s\n","comm-mode                = Linear");
+    fprintf(fp,"%s\n","nstxout                  = 1");
+    fprintf(fp,"%s\n","nstvout                  = 1");
+    fprintf(fp,"%s\n","nstfout                  = 0");
+    fprintf(fp,"%s\n","nstlog                   = 1");
+    fprintf(fp,"%s\n","nstcalcenergy            = 5");
+    fprintf(fp,"%s\n","nstenergy                = 5");
+    fprintf(fp,"%s\n","nstxtcout                = 10");
+    fprintf(fp,"%s\n","xtc-precision            = 1000");
+    fprintf(fp,"%s\n","xtc-grps                 = protein");
+    fprintf(fp,"%s\n","energygrps               = protein");
+    fprintf(fp,"%s\n","nstlist                  = 5");
+    fprintf(fp,"%s\n","ns_type                  = grid");
+    fprintf(fp,"%s\n","pbc                      = xyz");
+    fprintf(fp,"%s\n","rlist                    = 0.8");
+    fprintf(fp,"%s\n","coulombtype              = pme");
+    fprintf(fp,"%s\n","rcoulomb-switch          = 0");
+    fprintf(fp,"%s\n","rcoulomb                 = 0.8");
+    fprintf(fp,"%s\n","vdwtype                  = shift");      
+    fprintf(fp,"%s\n","rvdw-switch              = 0");
+    fprintf(fp,"%s\n","rvdw                     = 0.8");
+    fprintf(fp,"%s\n","table-extension          = 100"); 
+    fprintf(fp,"%s\n","pme_order                = 4");
+    fprintf(fp,"%s\n","ewald_rtol               = 1e-05");
+    fprintf(fp,"%s\n","ewald_geometry           = 3d");
+    fprintf(fp,"%s\n","epsilon_surface          = 0");
+    fprintf(fp,"%s\n","optimize_fft             = no");
+    fprintf(fp,"%s\n","tcoupl                   = v-rescale");
+    fprintf(fp,"%s\n","tc-grps                  = system ");
+    fprintf(fp,"%s\n","tau-t                    = 1.0 ");
+    fprintf(fp,"%s%f\n","ref-t                    = ", sim_temp);
+    fprintf(fp,"%s\n","gen-vel                  = yes");
+    fprintf(fp,"%s%f\n","gen-temp                 = ",sim_temp);
+    fprintf(fp,"%s%d\n","gen-seed                 = ", (int)ran);
+    fprintf(fp,"%s\n","constraints              = none");
+    fprintf(fp,"%s\n","free_energy              = yes");
+    fprintf(fp,"%s%f\n","init_lambda              = ",lambda);
+    fprintf(fp,"%s\n","delta_lambda             = 0"); 
+    fprintf(fp,"%s\n","foreign_lambda           = 0 0.5 1");
+    fprintf(fp,"%s\n","sc-alpha                 = 0.5");
+    fprintf(fp,"%s\n","sc-power                 = 1");
+    fprintf(fp,"%s\n","sc-sigma                 = 0.3");
+    fprintf(fp,"%s\n","couple-moltype           = Protein");
+    fprintf(fp,"%s\n","couple-lambda0           = vdw-q");
+    fprintf(fp,"%s\n","couple-lambda1           = vdw");
+    fprintf(fp,"%s\n","couple-intramol          = yes");
+    fprintf(fp,"%s\n","nstdhdl                  = 5");
+    fprintf(fp,"%s\n","freezegrps               = group");
+    fprintf(fp,"%s\n","freezedim                = Y Y Y");
+//    fprintf(fp,"%s\n","implicit_solvent         = GBSA");
+//    fprintf(fp,"%s\n","gb_algorithm             = HCT");
+//    fprintf(fp,"%s\n","rgbradii                 = 0.8");
+
+    fclose(fp);
+
+    fp = fopen("minim_dih.mdp","w"); 
+
+    fprintf(fp,"%s\n","cpp             = /lib/cpp");
+    fprintf(fp,"%s\n","include         = -I../top  ");
+    fprintf(fp,"%s\n","integrator      = cg");    
+    fprintf(fp,"%s\n","emstep          = 0.002");
+    fprintf(fp,"%s\n","emtol           = 200 ");
+    fprintf(fp,"%s\n","nsteps          = 300");   
+    fprintf(fp,"%s\n","nstenergy       = 1");
+    fprintf(fp,"%s\n","nstxtcout       = 10");    
+    fprintf(fp,"%s\n","xtc_grps        = Protein");    
+    fprintf(fp,"%s\n","energygrps      = Protein");
+    fprintf(fp,"%s\n","nstlist         = 5");    
+    fprintf(fp,"%s\n","ns_type         = grid");
+    fprintf(fp,"%s\n","rlist           = 0.7");   
+    fprintf(fp,"%s\n","coulombtype     = pme"); 
+    fprintf(fp,"%s\n","rcoulomb        = 0.7");    
+    fprintf(fp,"%s\n","vdwtype         = shift"); 
+    fprintf(fp,"%s\n","rvdw            = 0.7");    
+    fprintf(fp,"%s\n","constraints     = none");   
+    fprintf(fp,"%s\n","pbc             = xyz");
+    fprintf(fp,"%s\n","freezegrps      = group ");    
+    fprintf(fp,"%s\n","freezedim       = Y Y Y ");
+    
+
+    fclose(fp);
+    
+    fp = fopen("minim.mdp","w"); 
+
+    fprintf(fp,"%s\n","cpp             = /lib/cpp");
+    fprintf(fp,"%s\n","include         = -I../top  ");
+    fprintf(fp,"%s\n","integrator      = l-bfgs");    
+    fprintf(fp,"%s\n","emstep          = 0.02");
+    fprintf(fp,"%s\n","emtol           = 5000 ");
+    fprintf(fp,"%s\n","nsteps          = 300");   
+    fprintf(fp,"%s\n","nstenergy       = 1");
+    fprintf(fp,"%s\n","nstxtcout       = 10");    
+    fprintf(fp,"%s\n","xtc_grps        = Protein");    
+    fprintf(fp,"%s\n","energygrps      = Protein");
+    fprintf(fp,"%s\n","nstlist         = 5");    
+    fprintf(fp,"%s\n","ns_type         = simple");
+    fprintf(fp,"%s\n","rlist           = 0.7");   
+    fprintf(fp,"%s\n","coulombtype     = pme"); 
+    fprintf(fp,"%s\n","rcoulomb        = 0.7");    
+    fprintf(fp,"%s\n","vdwtype         = shift"); 
+    fprintf(fp,"%s\n","rvdw            = 0.7");    
+    fprintf(fp,"%s\n","constraints     = none");   
+    fprintf(fp,"%s\n","pbc             = xyz");
+    
+    fclose(fp);    
+
+    lambda = lambda + 0.5;
+    
+
+    
+    printf("%s\n","before minimize struct");
+    
+    i = minimize_struct(argc,argv);  
+       
+    
+    argc = 13;
+    
+    argv[0] = "grompp";
+    argv[1] = "-f";
+    argv[2] = "minim_fee.mdp";
+    argv[3] = "-p";
+    argv[4] = "LOV2.top";
+    argv[5] = "-o";
+    argv[6] = "run.tpr";
+    argv[7] = "-c";
+    argv[8] = "minimized.gro";
+    argv[9] = "-n";
+    argv[10] = "2.ndx";
+    argv[11] = "-maxwarn";
+    argv[12] = "3";  
+    
+  //     i = grompp_float(argc,argv);
+  
+       system("~/gromacs-4.5.5/src/kernel/grompp -f minim_fee.mdp -p LOV2.top -c minimized.gro -n 2.ndx -maxwarn 3 -o run.tpr");    
+     
+     
+	argc = 13;
+	argv[0] = "mdrun";
+	argv[1] = "-s";
+	argv[2] = "run.tpr";
+	argv[3] = "-c";
+	argv[4] = "minimized.gro";
+	argv[5] = "-o";
+	argv[6] = "trj.trr";
+	argv[7] = "-e";
+	argv[8] = "ener.edr";
+	argv[9] = "-dhdl";
+    if(k==1) argv[10] = "dhdl1";
+    if(k==2) argv[10] = "dhdl2";
+    if(k==3) argv[10] = "dhdl3";
+       argv[11] = "-dd";
+       argv[12] = "0";
+       
+ if(k == 1)   system("mpirun -np 8 ~/gromacs-4.5.5/src/kernel/mdrun -s run.tpr -c minimized.gro -o trj.trr -e ener.edr -dhdl dhdl1.xvg");   
+ if(k == 2)   system("mpirun -np 8 ~/gromacs-4.5.5/src/kernel/mdrun -s run.tpr -c minimized.gro -o trj.trr -e ener.edr -dhdl dhdl2.xvg"); 
+ if(k == 3)   system("mpirun -np 8 ~/gromacs-4.5.5/src/kernel/mdrun -s run.tpr -c minimized.gro -o trj.trr -e ener.edr -dhdl dhdl3.xvg");
+ 
+    system("rm -f ./#*#");
+
+
+  }  
+
+
+      
+    argc = 7;
+    argv[0] = "g_bar" ;
+    argv[1] = "-f";
+    argv[2] = "dhdl1.xvg";
+    argv[3] = "dhdl2.xvg";
+    argv[4] = "dhdl3.xvg";
+    argv[5] = "-o";
+    argv[6] = "t.xvg";
+  
+    
+    
+    i = gmx_bar3(argc,argv,&free_energy_out);
+   
+
+    *energy_val = free_energy_out;
+
+}
+
+int minimize_struct(int argc,char *argv[])
+{
+  
+  int i,k;
+  
+  FILE *fp;
+  
+  double ran;
+  
+  float lambda;
+  
+  char *grofile, *topfile, *mdpfile, *ndxfile;  
+
+  char *trajfile;
+  
+  char *final_file;
+
+  char *ener_file;
+
+  char *dhdlfile;
+  
+  float free_energy_out; 
+ 
+
+    argc = 13;
+    
+    argv[0] = "grompp";
+    argv[1] = "-f";
+    argv[2] = "minim_dih.mdp";
+    argv[3] = "-p";
+    argv[4] = "LOV2.top";
+    argv[5] = "-o";
+    argv[6] = "run.tpr";
+    argv[7] = "-c";
+    argv[8] = "minimized.gro";
+    argv[9] = "-n";
+    argv[10] = "2.ndx";
+    argv[11] = "-maxwarn";
+    argv[12] = "3";
+    
+//    i = grompp_float(argc,argv);
+     system("~/gromacs-4.5.5/src/kernel/grompp -f minim_dih.mdp -p LOV2.top -c minimized.gro -n 2.ndx -maxwarn 3 -o run.tpr");     
+  
+    
+	argc = 11;
+	argv[0] = "mdrun";
+	argv[1] = "-s";
+	argv[2] = "run.tpr";
+	argv[3] = "-c";
+	argv[4] = "minimized.gro";
+	argv[5] = "-o";
+	argv[6] = "trj.trr";
+	argv[7] = "-e";
+	argv[8] = "ener.edr";
+	argv[9] = "-dd";
+	argv[10] = "0";
+	
+    system("mpirun -np 8 ~/gromacs-4.5.5/src/kernel/mdrun -s run.tpr -c minimized.gro -o trj.trr -e ener.edr -dd 0");
+    
+    
+    printf("%s\n","after minimize mdfloat");  
+}
+
+int dih_trans(int argc,char *argv[],float ang_stddev[10000],int *sizeof_stddev)
+{
+      int i,m,a,a1,k,count1;
+  
+      char *xvgfile;
+      
+      int x[10000];
+      
+      float y[10000];
+      
+      int sizeof_x;
+      
+      int natoms;
+      
+      char char1[10000][100];
+      
+      char res_type[10000],atom_type[10000][5];
+  
+      int atom_num[10000];
+  
+      float atom_x[10000],atom_y[10000],atom_z[10000];
+
+      int res_number[10000]; 
+      
+      char s1[2];
+      
+      char s2[3];
+      
+      char s3;
+      
+      float angle_stddev;
+      
+//      float ang_stddev[1000];
+      
+      FILE *fp;
+
+      
+      xvgfile = "searchlist.ndx";    
+ 
+      i = read_xvg_files(xvgfile,&sizeof_x,x,y);
+      
+      printf("%d",sizeof_x);
+      
+      
+      
+      fp = fopen("minimized3.gro","r");
+      
+      a = 0;
+      
+      while(fgets(char1[a],sizeof(char1),fp) != NULL){
+	
+	a ++;
+	
+      };
+      
+      for(i=2;i<=a-2;i++){
+    
+          sscanf(char1[i],"%d%s%s%d%f%f%f",&res_number[i],&res_type[i],&atom_type[i],&atom_num[i],&atom_x[i],&atom_y[i],&atom_z[i]);
+      //    printf("%5d%5s%5s%5d%8.3f%8.3f%8.3f\n",res_number[i],&res_type[i],&atom_type[i],atom_num[i],atom_x[i],atom_y[i],atom_z[i]); 
+      };      
+      
+      fclose(fp);
+     
+ 
+a1 = 0;      
+
+count1 = 0;
+
+      for(i=1;i<=sizeof_x;i++){
+
+	fp = fopen("1.ndx","w");
+	
+	fprintf(fp,"%s\n","[ 1 ]");
+	
+	  for(m=2;m<=a-2;m++){
+	  
+	    if(x[i] == res_number[m]) {
+	    
+	        if(strcmp(atom_type[m],"CA")==0)
+	    
+	           fprintf(fp,"%d\n",atom_num[m]);
+	
+		   count1 ++;
+		
+		if(strcmp(atom_type[m],"N")==0)
+		  
+		   fprintf(fp,"%d\n",atom_num[m]);
+		
+		   count1 ++;		
+		
+		if(strcmp(atom_type[m],"C")==0)
+		  
+		   fprintf(fp,"%d\n",atom_num[m]);
+
+		   count1 ++;		
+		
+		if(strcmp(atom_type[m],"O")==0)
+		  
+		   fprintf(fp,"%d\n",atom_num[m]);
+
+		   count1 ++;		
+		
+	//    if(x[i] = res_number[m] && sscanf(atom_type[m],"%3s%2s",&s1,&s2)==1) printf("%s",&atom_type[m]) ;
+
+	      
+	    };
+	    
+	  };
+	
+	if(count1 == 3){
+	  
+	  fprintf(fp,"%d",atom_num[a-2]);
+	  
+	};
+
+	
+	fclose(fp);  
+	
+	argc = 7;
+	argv[0] = "g_angle";
+	argv[1] = "-f";
+	argv[2] = "md_traj.trr";
+	argv[3] = "-n";
+	argv[4] = "1.ndx";
+	argv[5] = "-type";
+	argv[6] = "dihedral";
+	
+	  
+	k = gmx_g_angle2(argc,argv,&angle_stddev);
+	
+	system("rm -f ./#*");
+	
+	ang_stddev[i] = angle_stddev;
+	
+      };
+      
+      *sizeof_stddev = sizeof_x;
+      
+      
+   //   for(i=1;i<=sizeof_x;i++) {
+	
+//	printf("%f\n",ang_stddev[i]);
+	
+//      };
+  
+}
+
+int noe_sep(int argc,char *argv[],float noe_min)
+{
+  
+       int a,i,k,l,p;
+  
+       int range_1or2;
+       
+       char *trajfile;
+             
+       int sizeof_x,sizeof_y;
+       
+       char *xvgfile;
+       
+       int x[10000];
+       
+       float y[10000];
+       
+       float rmsf2[10000];
+       
+       float maxi_king,mini_king;
+       
+       int sizerms;
+       
+       FILE *fp,*fp2;
+       
+       char char1[10000][100];
+      
+       char res_type[10000],atom_type[10000][5];
+  
+       int atom_num[10000];
+  
+       float atom_x[10000],atom_y[10000],atom_z[10000];
+
+       int res_number[10000];
+
+       
+      fp = fopen("minimized3.gro","r");
+      fp2 = fopen("prot.ndx","w");
+      
+      fprintf(fp2,"%s\n","[ 1 ]");
+      
+      a = 0;
+      
+      while(fgets(char1[a],sizeof(char1),fp) != NULL){
+	
+	a ++;
+	
+      };
+      
+      for(i=2;i<=a-2;i++){
+    
+              fprintf(fp2,"%d\n",i-1);
+      };      
+      
+      fclose(fp); 
+      fclose(fp2);
+    
+      trajfile = "md_traj";
+       
+       range_1or2 = 1;
+       
+       argc = 10;
+       argv[0] = "g_rmsf";
+       argv[1] = "-f";
+       argv[2] = "md_traj.trr";
+       argv[3] = "-o";
+       argv[4] = "rmsf.xvg";
+       argv[5] = "-res";
+       argv[6] = "-n";
+       argv[7] = "prot.ndx";
+       argv[8] = "-s";
+       argv[9] = "run.tpr";
+        
+       i = gmx_rmsf2(argc,argv,range_1or2,trajfile,rmsf2,&sizerms);
+       
+       return 0;
+       
+      fp = fopen("minimized3.gro","r");
+      
+      a = 0;
+      
+      while(fgets(char1[a],sizeof(char1),fp) != NULL){
+	
+	a ++;
+	
+      };
+      
+      for(i=2;i<=a-2;i++){
+    
+          sscanf(char1[i],"%d%s%s%d%f%f%f",&res_number[i],&res_type[i],&atom_type[i],&atom_num[i],&atom_x[i],&atom_y[i],&atom_z[i]);
+      //    printf("%5d%5s%5s%5d%8.3f%8.3f%8.3f\n",res_number[i],&res_type[i],&atom_type[i],atom_num[i],atom_x[i],atom_y[i],atom_z[i]); 
+      };      
+      
+      fclose(fp); 
+
+      p = 1;
+      
+      for(i=0;i<sizerms;i++){
+	
+	for(k=2;k<=a-2;k++){
+	  
+	  l = 1;
+	  
+	  if(atom_num[k] == i+1 && l==1 && res_number[k] != res_number[k+1]){
+	    
+	    x[p] = res_number[k];
+	    y[p] = rmsf2[i];
+	    
+	    l++;
+	    p++;
+	    
+	  };
+	  
+	};
+	
+      };
+      
+      sizeof_x = p-1;
+      
+//        for(i=1;i<=p-1;i++){
+	
+//	 printf("%f\t%d\t%d\n",y[i],i,p-1);
+	 
+//      };     
+      
+//       return 0;
+//       xvgfile = "rmsf.xvg";
+       
+//       i = read_xvg_files(xvgfile,&sizeof_x,x,y);
+       
+    //   printf("%s","here");
+       
+       maxi_king = 0;
+       
+       for(i=1;i<=sizeof_x;i++)
+       {
+    	   if(y[i] > maxi_king) maxi_king = y[i];
+       };
+       
+       mini_king = maxi_king;
+       
+       for(i=1;i<=sizeof_x;i++)
+       {
+	   if(y[i] < mini_king) mini_king = y[i]; 
+       };       
+       
+       fp = fopen("searchlist.ndx","w");
+       
+       for(i=1;i<=sizeof_x;i++)
+       {
+	   if(y[i] <= mini_king+mini_king*noe_min) fprintf(fp,"%d\t%f\n",x[i],y[i]);
+       };
+      
+       fclose(fp);
+       
+}
+
+int mdprod(int argc,char *argv[],int mdtime,float Temp,int imp,char *grofile)
+{
+        int i;
+	
+	char *topfile;
+	 
+	char *trajfile,*final_file,*ener_file,*mdpfile;
+
+	
+	i = write_mdp(mdtime,Temp,imp);
+  	  	
+	
+         argc = 11;
+         argv[0] = "grompp";
+         argv[1] = "-f";
+         argv[2] = "fullmd_sol.mdp";
+         argv[3] = "-p";
+         argv[4] = "start.top";
+         argv[5] = "-o";
+         argv[6] = "run.tpr";
+         argv[7] = "-c";	 
+         argv[8] = "start.gro";
+	 argv[9] = "-maxwarn";
+	 argv[10] = "3";	 
+	 
+//        i = grompp_float(argc,argv);
+       system("~/gromacs-4.5.5/src/kernel/grompp -f fullmd_sol.mdp -p start.top -c start.gro -n 2.ndx -maxwarn 3 -o run.tpr"); 	
+	
+	argc = 11;
+	argv[0] = "mdrun";
+	argv[1] = "-dd";
+	argv[2] = "0";
+	argv[3] = "-s";
+	argv[4] = "run.tpr";
+	argv[5] = "-c";
+	argv[6] = "minimized3.gro";
+	argv[7] = "-o";
+	argv[8] = "md_traj.trr";
+	argv[9] = "-e";
+	argv[10] = "md_ener.edr";
+
+	system("mpirun -np 8 ~/gromacs-4.5.5/src/kernel/mdrun -s run.tpr -c minimized3.gro -o md_traj.trr -e md_ener.edr -dd 0");	
+  
+}
+
+int write_mdp(int mdtime, float Temp,int imp)
+{
+        FILE *fp2;
+	
+        FILE *fp = fopen("fullmd_sol.mdp","w");
+	
+	if(imp == 1){
+	
+	fprintf(fp,"%s\n","title                    = implicit prod.");
+	fprintf(fp,"%s\n","cpp			 = /lib/cpp");
+	fprintf(fp,"%s\n","include 		 = -I../top");
+        fprintf(fp,"%s\n","integrator		 = md");
+	fprintf(fp,"%s\n","dt			 = 0.001");
+	fprintf(fp,"%s %d\n","nsteps  		 = ",mdtime);
+	fprintf(fp,"%s\n","comm_mode         =  angular ");
+	fprintf(fp,"%s\n","nstxout 		 = 100 ");
+	fprintf(fp,"%s\n","nstvout 		 = 100 ");
+	fprintf(fp,"%s\n","nstlog  		 = 100 ");
+	fprintf(fp,"%s\n","nstenergy		 = 100 ");
+	fprintf(fp,"%s\n","nstxtcout		 = 100 ");	
+	fprintf(fp,"%s\n","xtc_grps		 = protein");
+	fprintf(fp,"%s\n","energygrps		 = protein ");	
+	fprintf(fp,"%s\n","nstlist 		 = 10");	
+	fprintf(fp,"%s\n","ns_type 		 = grid");		
+	fprintf(fp,"%s\n","rlist		 = 1.4 ");	
+	fprintf(fp,"%s\n","coulombtype		 = cut-off ");		
+	fprintf(fp,"%s\n","rcoulomb		 = 1.4");
+	fprintf(fp,"%s\n","vdwtype           = cut-off ");	
+	fprintf(fp,"%s\n","rvdw			 = 1.6");	
+	fprintf(fp,"%s\n","pbc                      = no");	
+	fprintf(fp,"%s\n","tcoupl  		 = v-rescale");	
+	fprintf(fp,"%s\n","tc-grps 		 = system");	
+	fprintf(fp,"%s\n","tau_t	        =  1.0 ");	
+	fprintf(fp,"%s %f \n","ref_t		 = ",Temp);	
+	fprintf(fp,"%s\n","Pcoupl  		 = no");	
+	fprintf(fp,"%s\n","gen_vel 		 = yes");	
+	fprintf(fp,"%s %f \n","gen_temp		 = ",Temp);	
+        fprintf(fp,"%s\n","constraints         = none");
+	fprintf(fp,"%s\n","implicit_solvent         = GBSA");
+	fprintf(fp,"%s\n","gb_algorithm             = HCT");	
+	fprintf(fp,"%s\n","rgbradii                 = 1.4");	
+	fclose(fp);
+	
+	};
+	
+	if(imp == 0){
+	
+	fprintf(fp,"%s\n","title                    = implicit prod.");
+	fprintf(fp,"%s\n","cpp			 = /lib/cpp");
+	fprintf(fp,"%s\n","include 		 = -I../top");
+        fprintf(fp,"%s\n","integrator		 = md");
+	fprintf(fp,"%s\n","dt			 = 0.001");
+	fprintf(fp,"%s %d\n","nsteps  		 = ",mdtime);
+	fprintf(fp,"%s\n","comm_mode         =  angular ");
+	fprintf(fp,"%s\n","nstxout 		 = 1500 ");
+	fprintf(fp,"%s\n","nstvout 		 = 1500 ");
+	fprintf(fp,"%s\n","nstlog  		 = 1500 ");
+	fprintf(fp,"%s\n","nstenergy		 = 1500 ");
+	fprintf(fp,"%s\n","nstxtcout		 = 1500 ");	
+	fprintf(fp,"%s\n","xtc_grps		 = protein");
+	fprintf(fp,"%s\n","energygrps		 = protein ");	
+	fprintf(fp,"%s\n","nstlist 		 = 10");	
+	fprintf(fp,"%s\n","ns_type 		 = grid");		
+	fprintf(fp,"%s\n","rlist		 = 1.4 ");	
+	fprintf(fp,"%s\n","coulombtype		 = pme ");		
+	fprintf(fp,"%s\n","rcoulomb		 = 1.4");
+	fprintf(fp,"%s\n","vdwtype           = shift ");	
+	fprintf(fp,"%s\n","rvdw			 = 1.4");	
+	fprintf(fp,"%s\n","pbc                      = xyz");	
+	fprintf(fp,"%s\n","tcoupl  		 = v-rescale");	
+	fprintf(fp,"%s\n","tc-grps 		 = system");	
+	fprintf(fp,"%s\n","tau_t	        =  1.0 ");	
+	fprintf(fp,"%s %f \n","ref_t		 = ",Temp);	
+	fprintf(fp,"%s\n","Pcoupl  		 = berendsen");
+	fprintf(fp,"%s\n","pcoupltype = isotropic");
+	fprintf(fp,"%s\n","compressibility = 4.5E-5");
+	fprintf(fp,"%s\n","ref_p = 1.0");
+	fprintf(fp,"%s\n","tau_p = 1.0");
+	fprintf(fp,"%s\n","gen_vel 		 = yes");	
+	fprintf(fp,"%s %f \n","gen_temp		 = ",Temp);	
+        fprintf(fp,"%s\n","constraints         = none");	
+	fclose(fp);
+	
+	};	
+	
+        fp2 = fopen("minim.mdp","w");
+	
+	fprintf(fp2,"%s\n","title                    = implicit minim.");
+	fprintf(fp2,"%s\n","cpp			 = /lib/cpp");
+	fprintf(fp2,"%s\n","include 		 = -I../top");
+        fprintf(fp2,"%s\n","integrator		 = cg");
+	fprintf(fp2,"%s\n","emtol                = 2000");
+	fprintf(fp2,"%s\n","emstep               = 0.02");
+	fprintf(fp2,"%s\n","nsteps               = 200");
+	fprintf(fp2,"%s\n","dt			 = 0.001");
+	fprintf(fp2,"%s\n","comm_mode            =  angular ");
+	fprintf(fp2,"%s\n","nstxout 		 = 1500 ");
+	fprintf(fp2,"%s\n","nstvout 		 = 1500 ");
+	fprintf(fp2,"%s\n","nstlog  		 = 1500 ");
+	fprintf(fp2,"%s\n","nstenergy		 = 1500 ");
+	fprintf(fp2,"%s\n","nstxtcout		 = 1500 ");	
+	fprintf(fp2,"%s\n","xtc_grps		 = protein");
+	fprintf(fp2,"%s\n","energygrps		 = protein ");	
+	fprintf(fp2,"%s\n","nstlist 		 = 10");	
+	fprintf(fp2,"%s\n","ns_type 		 = grid");		
+	fprintf(fp2,"%s\n","rlist		 = 1.4 ");	
+	fprintf(fp2,"%s\n","coulombtype		 = pme");		
+	fprintf(fp2,"%s\n","rcoulomb		 = 1.4");
+	fprintf(fp2,"%s\n","vdwtype           = shift ");	
+	fprintf(fp2,"%s\n","rvdw			 = 1.4");	
+	fprintf(fp2,"%s\n","pbc                  = xyz");	
+	fprintf(fp2,"%s\n","tcoupl  		 = no");	
+	fprintf(fp2,"%s\n","tc-grps 		 = system");	
+	fprintf(fp2,"%s\n","tau_t	        =  1.0 ");	
+	fprintf(fp2,"%s %f \n","ref_t		 = ",Temp);	
+	fprintf(fp2,"%s\n","Pcoupl  		 = no");	
+	fprintf(fp2,"%s\n","gen_vel 		 = no");	
+	fprintf(fp2,"%s %f \n","gen_temp		 = ",Temp);	
+        fprintf(fp2,"%s\n","constraints         = none");
+	fclose(fp2);
+	
+return 1;	
+}
+
+int replex(int argc, char *argv[],float T1,float T2,float T3,float T4,float T5,float *sim_temp,int mdtime,float Temp_orig,int imp)
+{
+
+  int i,u;
+
+  double R = 8.314E-3;
+  
+  int Temp_number;
+  
+  float Temp_array[10];
+  
+  float Temp_simulated[2];
+  
+  float  rep_energy[10];
+  
+  float  en_aver;
+  
+  double   x;
+  
+  int seed,y,select_term;
+  
+  int mdtime2,mpierr;
+  
+  char *trajfile,*final_file,*ener_file,*grofile,*topfile;
+  
+  char *mdpfile;
+  
+  mdtime2   = 500;
+
+  argc = 1;
+ 
+  
+         i = write_mdp(mdtime2,Temp_orig,imp);
+
+  
+         argc = 11;
+         argv[0] = "grompp";
+         argv[1] = "-f";
+         argv[2] = "minim.mdp";
+         argv[3] = "-p";
+         argv[4] = "start.top";
+         argv[5] = "-o";
+         argv[6] = "run.tpr";
+         argv[7] = "-c";	 
+         argv[8] = "start.gro";
+	 argv[9] = "-maxwarn";
+	 argv[10] = "3";
+	 
+//        i = grompp_float(argc,argv);
+       system("~/gromacs-4.5.5/src/kernel/grompp -f minim.mdp -p start.top -c start.gro  -maxwarn 3 -o run.tpr"); 	
+	
+	argc = 11;
+	argv[0] = "mdrun";
+	argv[1] = "-s";
+	argv[2] = "run.tpr";
+	argv[3] = "-c";
+	argv[4] = "start.gro";
+	argv[5] = "-o";
+	argv[6] = "trj.trr";
+	argv[7] = "-e";
+	argv[8] = "ener.edr";
+	argv[9] = "-dd";
+	argv[10] = "0";
+
+ 	system("mpirun -np 8 ~/gromacs-4.5.5/src/kernel/mdrun -s run.tpr -c start.gro -o trj.trr -e ener.edr -dd 0");
+  
+  grofile   = "start";
+  trajfile  = "trj";
+  ener_file  = "md_ener";
+  topfile   = "start";
+  final_file = "replex";
+  mdpfile   = "fullmd_sol";
+  select_term = 11;
+  
+  for(i=1;i <= 5;i++) {
+    
+    if(i == 1) 
+      
+      Temp_array[i] = T1;
+    
+    if(i == 2) 
+      
+      Temp_array[i] = T2;    
+
+    if(i == 3) 
+      
+      Temp_array[i] = T3;
+
+    if(i == 4) 
+      
+      Temp_array[i] = T4;    
+    
+    if(i == 5) 
+      
+      Temp_array[i] = T5;
+    
+  };
+    
+
+ for(i=1;i <= 5;i++) {
+
+   if(Temp_array[i] == Temp_orig) 
+
+      Temp_number = i;
+ }; 
+
+
+   i = random_number(&x);
+   
+
+     if(x <= 0.5){
+       
+       for(y=1;y <= 2; y++) 
+	 
+       {
+
+	 
+	 i = write_mdp(mdtime2,Temp_array[Temp_number+y-1],imp);
+	 
+	 
+	 
+         argc = 11;
+         argv[0] = "grompp";
+         argv[1] = "-f";
+         argv[2] = "minim.mdp";
+         argv[3] = "-p";
+         argv[4] = "start.top";
+         argv[5] = "-o";
+         argv[6] = "run.tpr";
+         argv[7] = "-c";	 
+         argv[8] = "start.gro";
+	 argv[9] = "-maxwarn";
+	 argv[10] = "3";
+     
+         
+	 
+//        i = grompp_float(argc,argv);
+	
+       system("~/gromacs-4.5.5/src/kernel/grompp -f minim.mdp -p start.top -c start.gro  -maxwarn 3 -o run.tpr"); 	
+	
+	argc = 11;
+	argv[0] = "mdrun";
+	argv[1] = "-s";
+	argv[2] = "run.tpr";
+	argv[3] = "-c";
+	argv[4] = "start.gro";
+	argv[5] = "-o";
+	argv[6] = "trj.trr";
+	argv[7] = "-e";
+	argv[8] = "ener.edr";
+	argv[9] = "-dd";
+	argv[10] = "0";
+
+
+	system("mpirun -np 8 ~/gromacs-4.5.5/src/kernel/mdrun -s run.tpr -c start.gro -o trj.trr -e ener.edr -dd 0");	 
+	 
+	 select_term = 11;
+
+	   
+	 argc = 5;
+	 argv[0] = "g_energy";
+	 argv[1] = "-f";
+	 argv[2] = "ener.edr";
+	 argv[3] = "-o";
+	 argv[4] = "1.xvg";
+	 
+	 i = gmx_energy(argc,argv,ener_file,select_term,&en_aver);
+		 
+	 rep_energy[y] = en_aver;
+	 
+	 Temp_simulated[y] = Temp_array[Temp_number+y-1];
+	 
+	 
+
+	 };
+	 
+       };
+ 
+     
+     if(x > 0.5){
+       
+       
+       for(y=1;y <= 2; y++) 
+	 
+       {
+
+	
+	 i = write_mdp(mdtime2,Temp_array[Temp_number-y+1],imp);
+	 
+         argc = 11;
+         argv[0] = "grompp";
+         argv[1] = "-f";
+         argv[2] = "minim.mdp";
+         argv[3] = "-p";
+         argv[4] = "start.top";
+         argv[5] = "-o";
+         argv[6] = "run.tpr";
+         argv[7] = "-c";	 
+         argv[8] = "start.gro";
+	 argv[9] = "-maxwarn";
+	 argv[10] = "3";
+    	 
+	 
+//        i = grompp_float(argc,argv);
+       system("~/gromacs-4.5.5/src/kernel/grompp -f minim.mdp -p start.top -c start.gro  -maxwarn 3 -o run.tpr"); 	
+
+       
+	argc = 11;
+	argv[0] = "mdrun";
+	argv[1] = "-s";
+	argv[2] = "run.tpr";
+	argv[3] = "-c";
+	argv[4] = "start.gro";
+	argv[5] = "-o";
+	argv[6] = "trj.trr";
+	argv[7] = "-e";
+	argv[8] = "ener.edr";
+	argv[9] = "-dd";
+	argv[10] = "0";
+	
+	
+ 
+	system("mpirun -np 8 ~/gromacs-4.5.5/src/kernel/mdrun -s run.tpr -c start.gro -o trj.trr -e ener.edr -dd 0");	
+
+	 
+	 argc = 5;
+	 argv[0] = "g_energy";
+	 argv[1] = "-f";
+	 argv[2] = "ener.edr";
+	 argv[3] = "-o";
+	 argv[4] = "1.xvg";
+	 
+	 i = gmx_energy(argc,argv,ener_file,select_term,&en_aver);
+	 
+	 rep_energy[y] = en_aver;
+	 
+	 Temp_simulated[y] = Temp_array[Temp_number-y+1];
+	 
+	 
+	 
+       };
+	 
+      };
+      
+        
+       
+      if(Temp_number == 1){
+
+	for(y=1;y <= 2; y++) 
+	 
+       {
+
+	
+	 i = write_mdp(mdtime2,Temp_array[Temp_number+y-1],imp);
+	 
+	 
+	 argc = 11;
+         argv[0] = "grompp";
+         argv[1] = "-f";
+         argv[2] = "minim.mdp";
+         argv[3] = "-p";
+         argv[4] = "start.top";
+         argv[5] = "-o";
+         argv[6] = "run.tpr";
+         argv[7] = "-c";	 
+         argv[8] = "start.gro";
+	 argv[9] = "-maxwarn";
+	 argv[10] = "3";   
+
+//	   i = grompp_float(argc,argv);
+       system("~/gromacs-4.5.5/src/kernel/grompp -f minim.mdp -p start.top -c start.gro  -maxwarn 3 -o run.tpr"); 
+       
+       
+	argc = 11;
+	argv[0] = "mdrun";
+	argv[1] = "-s";
+	argv[2] = "run.tpr";
+	argv[3] = "-c";
+	argv[4] = "start.gro";
+	argv[5] = "-o";
+	argv[6] = "trj.trr";
+	argv[7] = "-e";
+	argv[8] = "ener.edr";
+	argv[9] = "-dd";
+	argv[10] = "0";
+	
+	system("mpirun -np 8 ~/gromacs-4.5.5/src/kernel/mdrun -s run.tpr -c start.gro -o trj.trr -e ener.edr -dd 0");	 
+	
+	 select_term = 11;
+
+	   
+	 argc = 5;
+	 argv[0] = "g_energy";
+	 argv[1] = "-f";
+	 argv[2] = "ener.edr";
+	 argv[3] = "-o";
+	 argv[4] = "1.xvg";	
+	 
+	 i = gmx_energy(argc,argv,ener_file,select_term,&en_aver);
+	 
+	 rep_energy[y] = en_aver;
+	 
+	 Temp_simulated[y] = Temp_array[Temp_number+y-1];
+	 
+         };
+	 
+       };
+
+
+      if(Temp_number == 5){
+
+	for(y=1;y <= 2; y++) 
+	 
+       {
+
+	 
+	 i = write_mdp(mdtime2,Temp_array[Temp_number-y+1],imp);
+	 
+	 
+	 argc = 11;
+         argv[0] = "grompp";
+         argv[1] = "-f";
+         argv[2] = "minim.mdp";
+         argv[3] = "-p";
+         argv[4] = "start.top";
+         argv[5] = "-o";
+         argv[6] = "run.tpr";
+         argv[7] = "-c";	 
+         argv[8] = "start.gro";
+	 argv[9] = "-maxwarn";
+	 argv[10] = "3";
+      
+	 
+//        i = grompp_float(argc,argv);
+       system("~/gromacs-4.5.5/src/kernel/grompp -f minim.mdp -p start.top -c start.gro  -maxwarn 3 -o run.tpr"); 	
+	
+	argc = 11;
+	argv[0] = "mdrun";
+	argv[1] = "-s";
+	argv[2] = "run.tpr";
+	argv[3] = "-c";
+	argv[4] = "start.gro";
+	argv[5] = "-o";
+	argv[6] = "trj.trr";
+	argv[7] = "-e";
+	argv[8] = "ener.edr";
+	argv[9] = "-dd";
+	argv[10] = "0";
+	
+
+	system("mpirun -np 8 ~/gromacs-4.5.5/src/kernel/mdrun -s run.tpr -c start.gro -o trj.trr -e ener.edr -dd 0");	
+	 
+	 select_term = 11;
+
+	   
+	 argc = 5;
+	 argv[0] = "g_energy";
+	 argv[1] = "-f";
+	 argv[2] = "ener.edr";
+	 argv[3] = "-o";
+	 argv[4] = "1.xvg";	   
+	 
+	 i = gmx_energy(argc,argv,ener_file,select_term,&en_aver);
+	 
+	 rep_energy[y] = en_aver;
+	 
+	 Temp_simulated[y] = Temp_array[Temp_number-y+1];
+	 
+	 };
+	 
+       };
+       
+      
+       
+       i = 1;
+
+       if( rep_energy[2] <= rep_energy[1]) 
+
+                   *sim_temp = Temp_simulated[2]
+        ;
+
+        if( rep_energy[2] >= rep_energy[1])
+
+                   i = random_number(&x); 
+
+                   if(x >= exp(((1/(R*Temp_simulated[1]))-(1/(R*Temp_simulated[2])))*(rep_energy[1]-rep_energy[2]))) 
+
+                      *sim_temp = Temp_simulated[2];
+
+                   else
+
+                      *sim_temp = Temp_simulated[1]
+
+                   ;
+
+         ;
+	 
+system("rm -f ./#*");
+
+
+
+}
+
+int random_number(double *x)
+
+{
+   
+   int seed;
+  
+   seed = time(NULL);
+   srand(seed);  
+   
+   srand( (unsigned)time( NULL ) );  
+   *x = (double) rand() / (double) RAND_MAX;
+
+}
